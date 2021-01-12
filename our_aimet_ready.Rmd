@@ -1,0 +1,493 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.9.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+<!-- #region id="6z5YVNCz9mLL" -->
+# AIMET dependencies install & build
+The following group of cells installs the AIMET library for you. For more details, please see [this link](https://github.com/quic/aimet/blob/develop/packaging/google_colab_install.md).
+
+You can clone this notebook and use it in your own project. Make sure that before running these cells, you connect to a hosted environment with a GPU accelerator. (Runtime -> Change runtime -> Hardware Accelerator(GPU))
+<!-- #endregion -->
+
+<!-- #region id="-Hz_C0-x_hbw" -->
+## Installing dependencies
+May prompt you.
+<!-- #endregion -->
+
+```{python}
+TEST VOOR GIT
+```
+
+```{python colab={'base_uri': 'https://localhost:8080/', 'height': 1000}, executionInfo={'elapsed': 832825, 'status': 'ok', 'timestamp': 1610296563283, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="xCMVKw4N9lYv", outputId="979c56ce-080f-4e3c-e056-9b77d6ad24e6"}
+# !pip3 uninstall --yes protobuf
+# !pip3 uninstall --yes tensorflow
+# !apt-get update
+# !apt-get install python3.6
+# !apt-get install python3-dev
+# !apt-get install python3-pip
+# !apt-get install liblapacke liblapacke-dev
+# !apt-get install wget
+# !pip3 install numpy==1.16.4
+# !apt-get install libgtest-dev build-essential cmake
+# !pip3 --no-cache-dir install opencv-python==4.1.0.25
+# !pip3 --no-cache-dir install pillow==6.2.1
+# !pip3 install pytorch-ignite==0.1.0
+# !wget -q https://github.com/Itseez/opencv/archive/3.1.0.tar.gz -O /tmp/3.1.0.tar.gz > /dev/null
+# !tar -C /tmp -xvf /tmp/3.1.0.tar.gz > /dev/null
+# %cd /tmp/opencv-3.1.0
+# %mkdir release
+# %cd release
+# !cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=release -DWITH_FFMPEG=OFF -DBUILD_TESTS=OFF -DWITH_CUDA=OFF -DBUILD_PERF_TESTS=OFF -DWITH_IPP=OFF -DENABLE_PRECOMPILED_HEADERS=OFF .. > /dev/null
+# !make -j16 > /dev/null
+# !make -j16 install > /dev/null
+# !wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
+# !apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
+# !dpkg -i cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
+# !apt-get update
+# !wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
+# !apt install ./nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
+# !apt-get update
+# !apt install cuda-cublas-10-0 cuda-cufft-10-0 cuda-curand-10-0 cuda-cusolver-10-0
+# !apt-get update && apt install cuda-cusparse-10-0 libcudnn7=7.6.2.24-1+cuda10.0 libnccl2=2.4.8-1+cuda10.0  cuda-command-line-tools-10.0
+# !pip3 install scipy==1.1.0
+# !pip3 install protobuf==3.7.1
+# !pip3 install scikit-learn==0.19.1
+# !pip3 install tb-nightly==1.14.0a20190517
+# !pip3 install tensorboardX==1.7
+# !pip3 install https://download.pytorch.org/whl/cu100/torch-1.4.0%2Bcu100-cp36-cp36m-linux_x86_64.whl
+# !pip3 install https://download.pytorch.org/whl/cu100/torchvision-0.5.0%2Bcu100-cp36-cp36m-linux_x86_64.whl
+# !pip3 install --upgrade pip
+# !pip3 install tensorflow-gpu==1.15.0
+# !pip3 install future==0.17.1
+# !pip3 install tensorboard==1.14
+# !pip3 install bokeh==1.2.0
+# !pip3 install pandas==0.22.0
+# !pip3 install holoviews==1.12.7
+# !pip3 install --no-deps bokeh==1.2.0 hvplot==0.4.0
+# !pip3 install jsonschema==3.1.1
+# !pip3 install osqp onnx
+
+# !ln -s /usr/local/cuda-10.0 /usr/local/cuda
+# !apt-get update && apt-get install -y libjpeg8-dev
+# !ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
+
+# !apt install zlib1g-dev
+
+# !pip3 uninstall --yes Pillow && pip3 install Pillow-SIMD==6.0.0.post0
+# !pip3 uninstall --yes pytest
+# !pip3 install pytest
+# !pip3 install setuptools==41.0.1
+# !pip3 install keras==2.2.4
+
+# %rm -rf /usr/local/bin/python
+# !ln -s /usr/bin/python3 /usr/local/bin/python
+```
+
+<!-- #region id="PiiZL_wi_oeP" -->
+After installing the dependencies, you must restart the environment before proceeding. (Runtime -> Restart Runtime)
+
+<!-- #endregion -->
+
+<!-- #region id="tdF9TK03CKiW" -->
+## AIMET build and installation.
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/'}, executionInfo={'elapsed': 115891, 'status': 'ok', 'timestamp': 1610296813311, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="1nR1MrsI-EW1", outputId="03b22e94-4bbf-499e-c364-df5b131f2975"}
+# %cd /content/
+# !rm -rf aimet_code
+# !mkdir aimet_code
+# %cd aimet_code
+# !git clone https://github.com/quic/aimet.git
+# %cd aimet
+# %mkdir -p ./ThirdParty/googletest
+# %pushd ./ThirdParty/googletest
+# !git clone https://github.com/google/googletest.git -b release-1.8.0 googletest-release-1.8.0
+# %popd
+# %cd /content/aimet_code
+# %mkdir build
+# %cd build
+# !cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ../aimet
+# !make -j 8
+# !make install
+```
+
+<!-- #region id="U6qARmUzAZj4" -->
+## Setting up `PYTHONPATH` and `LD_LIBRARY_PATH`
+<!-- #endregion -->
+
+```{python id="INEc0N5xAbuz"}
+import sys
+
+sys.path.append(r'/content/aimet_code/build/staging/universal/lib/python')
+sys.path.append(r'/content/aimet_code/build/staging/universal/lib/x86_64-linux-gnu')
+sys.path.append(r'/usr/local/lib/python3.6/dist-packages')
+sys.path.append(r'/content/aimet_code/build/artifacts')
+
+import os
+
+os.environ['LD_LIBRARY_PATH']+= ":/content/aimet_code/build/artifacts"
+```
+
+<!-- #region id="2DiI-1hvAhd3" -->
+## Run unit tests
+If the installation went smoothly, all tests should pass.
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/'}, executionInfo={'elapsed': 438596, 'status': 'ok', 'timestamp': 1610297270113, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="WhO4FvxHAijc", outputId="fdf0203b-f52d-4e6f-f89f-722b155fcabf"}
+# %cd /content/aimet_code/build/
+# !ctest
+```
+
+<!-- #region id="-ZJ8R7fCRx_f" -->
+# Train a model on MNIST data
+<!-- #endregion -->
+
+<!-- #region id="sXn0f41ueDFN" -->
+Set random seed for reprodubicility
+<!-- #endregion -->
+
+```{python executionInfo={'elapsed': 970, 'status': 'ok', 'timestamp': 1610306425865, 'user': {'displayName': 'Jelle', 'photoUrl': '', 'userId': '13664908576423573267'}, 'user_tz': -60}, id="Y-GPWZa2eFS1"}
+import torch
+import numpy as np
+
+def set_seed(seed=42):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+set_seed()
+```
+
+<!-- #region id="U_zQ5VelR30T" -->
+Define a model
+<!-- #endregion -->
+
+```{python executionInfo={'elapsed': 1010, 'status': 'ok', 'timestamp': 1610306428470, 'user': {'displayName': 'Jelle', 'photoUrl': '', 'userId': '13664908576423573267'}, 'user_tz': -60}, id="z9-dFvJhRxsf"}
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class LeNet5(torch.nn.Module):          
+
+    def __init__(self):     
+        super(LeNet5, self).__init__()
+        self.convs = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5, padding=2),
+                                    nn.ReLU(),
+                                    nn.MaxPool2d(kernel_size=2),
+                                    nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5, padding=0),
+                                    nn.ReLU(),
+                                    nn.MaxPool2d(kernel_size=2)
+                                  )
+
+        self.linears = nn.Sequential(nn.Linear(16*5*5, 120),
+                                     nn.Linear(120, 84),
+                                     nn.Linear(84, 10)
+                                    )
+
+    def forward(self, x):
+        x = self.convs(x)
+        x = x.flatten(start_dim=1)
+        x = self.linears(x)
+
+        return x
+```
+
+<!-- #region id="NKBto0ykVIkW" -->
+Define dataloaders
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/', 'height': 484, 'referenced_widgets': ['2328a7b009d44c5e9eacff2a755cbebb', 'ed9207ce942047e9ae6072508f523741', '46c25a22208a49eda4e6eab32d4eaf2f', 'd4ff65d7c61d4bf9b73c03e29c28a8ad', '2a5ab588d2f24b0ab3ec8ce388f5127f', 'a5f8150fe3124fc88dc714b404006f34', '8da6d53cc36743e6bd5058b8840e0c41', 'f6769ba59c21406e8c259661bdbf68f1', '4b07de9e194f4439baeae01257e4ba52', 'bd10cc47f292451d922d8980f5e93ddf', '7989862673284a799c9d51e431373247', '154e97cc69984a0ab11ced26576ebbd7', '5503b3b0dbb548589aaa0279b976a414', 'efa8ccf950004549a00250f6332bc16b', 'c41636ad0caf4621870bd12e89518604', 'ab3eb90c487746e8b65e62d7757c0e78', 'af3a484183a24008a6d38960f73ffb3e', 'ac82f07b477b4502b21ebaa8a539c4a3', '012c3c9adc694baba6feb904d60f9201', '8ce0005792b74005a30cb426b5c8077a', '0b0a62dffc4341069d860e1e7c09a85c', '3b5ccd5354b040b58f645351f4d950f3', '543c9bdec83f486eaa8b9b2b58ef211a', '9fffcd6e9d7a449fb4bfccedc6cb70a1', 'df98becb207b42f2bbeaf23708e5be02', '15b6b7d213c94345b6dedf59e8e065dc', '6126bcc00c54407688d7d3a081fa43c0', '15c6e5135ed849bc89dec5bf0a38363b', '657579abb9c4488c8f1a810a679dfda9', '1af67330e5d947718a1e80e982898052', 'c9dc0f6d46b74558bcb4962e3f1fb489', 'ab99643118ed466298c1ea12d4ac53d9']}, executionInfo={'elapsed': 2453, 'status': 'ok', 'timestamp': 1610306438151, 'user': {'displayName': 'Jelle', 'photoUrl': '', 'userId': '13664908576423573267'}, 'user_tz': -60}, id="kH5o32FLVJ2D", outputId="49acbac6-c0ea-4f76-b479-d7bf33ecacfb"}
+import torchvision.transforms
+from torch.utils.data import DataLoader
+from torchvision.datasets import MNIST
+
+# Convert imgs to tensor and normalize by mean and stddev of the training set
+transformImg = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),
+                                               torchvision.transforms.Normalize((0.1307,), (0.3081,))])
+print(transformImg)
+
+train = MNIST(root='./data', train=True, download=True, transform=transformImg)
+test = MNIST(root='./data', train=False, download=True, transform=transformImg)  
+
+def keep_percentage(dataset, target, percentage):
+    target_mask = dataset.targets == target
+    selection_idx = target_mask.nonzero()[round(len(target_mask.nonzero())*percentage/100):]
+    selection_mask = np.ones(len(dataset.data), dtype=bool)
+    selection_mask[selection_idx] = False
+    dataset.data = dataset.data[selection_mask]
+    dataset.targets = dataset.targets[selection_mask]
+
+keep_percentage(train, 6, 50)
+keep_percentage(train, 9, 50)
+
+# Define train/test loaders
+train_loader = DataLoader(train, batch_size=128, num_workers=4, shuffle=True, pin_memory=True)
+test_loader = DataLoader(train, batch_size=1024, num_workers=4, shuffle=False, pin_memory=True)
+```
+
+```{python}
+# train.data[train.targets == 6]
+# def keep_percentage(data, targets, target, percentage):
+#     target_mask = targets == target
+#     selection_idx = target_mask.nonzero()[round(len(target_mask.nonzero())*percentage/100):]
+#     selection_mask = np.ones(60000, dtype=bool)
+#     selection_mask[selection_idx] = False
+#     data = data[selection_mask]
+
+# print(60000 - len(train.data[train.targets == 6])/2)
+# len(keep_percentage(train.data, train.targets, 6, 50))
+# print(train)
+# def keep_percentage(dataset, target, percentage):
+#     target_mask = dataset.targets == target
+#     selection_idx = target_mask.nonzero()[round(len(target_mask.nonzero())*percentage/100):]
+#     selection_mask = np.ones(60000, dtype=bool)
+#     selection_mask[selection_idx] = False
+#     dataset.data = dataset.data[selection_mask]
+
+# keep_percentage(train, 6, 50)
+# print(train)
+```
+
+<!-- #region id="6iRixegDe7Ot" -->
+Define functions for conducting the training and testing epochs
+<!-- #endregion -->
+
+```{python executionInfo={'elapsed': 1003, 'status': 'ok', 'timestamp': 1610306455425, 'user': {'displayName': 'Jelle', 'photoUrl': '', 'userId': '13664908576423573267'}, 'user_tz': -60}, id="BgDcuZVhe9C4"}
+def accuracy(out, y):
+    preds = out.argmax(dim=1, keepdim=True).squeeze()
+    correct = preds.eq(y).sum().item()
+    return correct
+
+def train_epoch(model, opt, train_loader, criterion, device):
+    model.train()
+    epoch_loss = 0
+    epoch_acc = 0
+    n_samples = 0
+    for x,y in train_loader:
+        opt.zero_grad()
+
+        x, y = x.to(device), y.to(device)
+        out = model.forward(x)
+        loss = criterion(out, y)
+
+        epoch_acc += accuracy(out, y)
+        epoch_loss += loss.item()
+        n_samples += x.size(0)
+
+        loss.backward()
+        opt.step()
+
+    epoch_acc = epoch_acc / n_samples
+    epoch_loss = epoch_loss / n_samples
+
+    return epoch_acc, epoch_loss
+
+
+
+def test_epoch(model, test_loader, criterion, device):
+    model.eval()
+    epoch_loss = 0
+    epoch_acc = 0
+    n_samples = 0
+    with torch.no_grad():
+        for x,y in test_loader:
+            x, y = x.to(device), y.to(device)
+            out = model.forward(x)
+            loss = criterion(out, y)
+
+            epoch_acc += accuracy(out, y)
+            epoch_loss += loss.item()
+            n_samples += x.size(0)
+
+    epoch_acc = epoch_acc / n_samples
+    epoch_loss = epoch_loss / n_samples
+
+    return epoch_acc, epoch_loss
+```
+
+<!-- #region id="7w97dpw3dyde" -->
+Instantiate required objects and train
+<!-- #endregion -->
+
+```{python id="D28i0tp6VqTZ"}
+import torch.optim as optim
+import numpy as np
+from torch.utils.tensorboard import SummaryWriter
+
+criterion = nn.CrossEntropyLoss(weight = torch.FloatTensor([1,1,1,1,1,1,2,1,1,2]))
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+n_epochs = 10
+writer = SummaryWriter()
+model = LeNet5().to(device)
+opt = optim.SGD(model.parameters(), lr=1e-2)
+
+# Train+test, log to tensorboard
+# It's recommended to also print all the scalar values
+for i in range(n_epochs):
+    train_acc, train_loss = train_epoch(model, opt, train_loader, criterion, device)
+    test_acc, test_loss = test_epoch(model, test_loader, criterion, device)
+    writer.add_scalar('train/acc', train_acc, i+1)
+    writer.add_scalar('train/loss', train_loss, i+1)
+    writer.add_scalar('test/acc', test_acc, i+1)
+    writer.add_scalar('test/loss', test_loss, i+1)
+
+```
+
+<!-- #region id="pW_XJaFxlWFk" -->
+Let's check out how the model did with tensorboard
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/', 'height': 425}, executionInfo={'elapsed': 5154, 'status': 'ok', 'timestamp': 1610307800543, 'user': {'displayName': 'Jelle', 'photoUrl': '', 'userId': '13664908576423573267'}, 'user_tz': -60}, id="A3fkVkHYfMi9", outputId="9088161d-a432-4182-ff53-81f7fbd8454a"}
+# %reload_ext tensorboard
+# !pip3 install tensorboard-plugin-wit
+# %tensorboard --logdir ./runs --host 0.0.0.0
+```
+
+<!-- #region id="9p7dzY73mfBQ" -->
+# Do channel pruning with AIMET
+<!-- #endregion -->
+
+<!-- #region id="SFFOWmSmmh0H" -->
+Import necessary stuff
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/', 'height': 1000}, executionInfo={'elapsed': 4679, 'status': 'ok', 'timestamp': 1610297563542, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="mE-CvbnmmhMl", outputId="0fae64dd-1031-4c55-c2d1-63293f2e3ed6"}
+from aimet_common.defs import CostMetric, CompressionScheme, GreedySelectionParameters
+from aimet_torch.defs import ChannelPruningParameters
+from aimet_torch.compress import ModelCompressor
+from aimet_torch.onnx_utils import OnnxSaver
+from decimal import Decimal
+
+# Model compressor needs an evaluation function with this specific signature
+def eval_callback(model, iterations, use_cuda=True):
+    model.eval()
+    epoch_acc = 0
+    n_samples = 0
+    with torch.no_grad():
+        for idx,(x,y) in enumerate(test_loader):
+            if use_cuda:
+                x, y = x.to('cuda:0'), y.to('cuda:0')
+
+            out = model.forward(x)
+            epoch_acc += accuracy(out, y)
+            n_samples += x.size(0)
+
+            if iterations is not None:
+                if idx == iterations:
+                    break
+        epoch_acc = epoch_acc / n_samples
+
+    return epoch_acc
+
+```
+
+<!-- #region id="bCSBR_ByrT4z" -->
+Do the actual pruning
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/'}, executionInfo={'elapsed': 83306, 'status': 'ok', 'timestamp': 1610297656200, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="N75lsRaAmna1", outputId="c3ff1dcd-ae7c-4b05-888b-01ff888a993f"}
+greedy_params = GreedySelectionParameters(target_comp_ratio=Decimal(0.5))
+# Exclude first layer from pruning
+modules_to_ignore = [model.convs[0]]
+auto_params = ChannelPruningParameters.AutoModeParams(greedy_params, modules_to_ignore)
+input_shape = (1, 1, 28, 28)
+channel_pruning_parameters = ChannelPruningParameters(mode=ChannelPruningParameters.Mode.auto,
+                                                      params=auto_params,
+                                                      data_loader=train_loader,
+                                                      num_reconstruction_samples=1024,
+                                                      allow_custom_downsample_ops=False,
+                                                    #   multiplicity=8
+                                                      )
+
+# This takes a bit
+comp_model_prun, stats_prun = ModelCompressor.compress_model(model,
+                                                   input_shape=input_shape,
+                                                   eval_callback=eval_callback,
+                                                   eval_iterations=None,
+                                                   compress_scheme=CompressionScheme.channel_pruning,
+                                                   cost_metric=CostMetric.mac,
+                                                   parameters=channel_pruning_parameters,
+                                                   )
+
+```
+
+<!-- #region id="WocMph_0o1Iw" -->
+Let's look at the two models. Can you see that `comp_model` has some missing channels in the convolutional layers?
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/'}, executionInfo={'elapsed': 985, 'status': 'ok', 'timestamp': 1610297665468, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="HW_7U8RUnwUe", outputId="6ec98696-025f-4b00-ea47-5bc1467b558f"}
+print(stats_prun)
+print('-'*10 + ' Original model ' + '-'*10)
+print(model)
+print('-'*10 + ' Compressed model ' + '-'*10)
+print(comp_model_prun)
+```
+
+<!-- #region id="nY1XFsmrpE2Y" -->
+Now let's see how they compare in terms of speed.
+Differences probably won't be huge here since the network is quite small to begin with, and only a single layer is pruned, but the point is to see that the compressed one is faster.
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/'}, executionInfo={'elapsed': 55985, 'status': 'ok', 'timestamp': 1610297835445, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="Kb83uXumopad", outputId="fe194811-5adc-410a-c261-687638c883e7"}
+# %timeit acc_full = eval_callback(model, None, use_cuda=True)
+# %timeit acc_comp = eval_callback(comp_model_prun, None, use_cuda=True)
+```
+
+<!-- #region id="DSJJNo9VeXJV" -->
+# Noa's try at Spatial SVD with AIMET
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/'}, executionInfo={'elapsed': 141074, 'status': 'ok', 'timestamp': 1610298010127, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="zpzXKE-UeNUd", outputId="5b264c06-3e9e-4fac-821d-8bc89182c6e6"}
+# Import the needed package
+from aimet_torch.defs import SpatialSvdParameters
+greedy_params = GreedySelectionParameters(target_comp_ratio=Decimal(0.5))
+# Do not exclude anything in contrary to channel pruning
+modules_to_ignore = []
+auto_params = SpatialSvdParameters.AutoModeParams(greedy_params, modules_to_ignore)
+input_shape = (1, 1, 28, 28)
+# Delete all the parameters that don't give an error in channel pruning, but do here
+spatial_svd_params = SpatialSvdParameters(mode=SpatialSvdParameters.Mode.auto,
+                                                      params=auto_params)
+
+# This takes a bit
+comp_model_svd, stats_svd = ModelCompressor.compress_model(model,
+                                                   input_shape=input_shape,
+                                                   eval_callback=eval_callback,
+                                                   eval_iterations=None,
+                                                   compress_scheme=CompressionScheme.spatial_svd,
+                                                   cost_metric=CostMetric.mac,
+                                                   parameters=spatial_svd_params,
+                                                   )
+```
+
+<!-- #region id="6u_PdEczhLN9" -->
+Look at the two models, but now compare it to the Spatial SVD one. You can see that the convolutional layers are split in two. What kind of effect this specificaly has, isn't clear yet.
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/'}, executionInfo={'elapsed': 1345, 'status': 'ok', 'timestamp': 1610298036084, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="LzCGSsYnhH2W", outputId="14ce1e8f-98fb-4bd3-d293-90a715b38075"}
+print(stats_svd)
+print('-'*10 + ' Original model ' + '-'*10)
+print(model)
+print('-'*10 + ' Compressed model ' + '-'*10)
+print(comp_model_svd)
+```
+
+<!-- #region id="iUhBcSsTiPp9" -->
+Compare the speed difference between original model and this new compressed model.
+<!-- #endregion -->
+
+```{python colab={'base_uri': 'https://localhost:8080/'}, executionInfo={'elapsed': 57089, 'status': 'ok', 'timestamp': 1610298249390, 'user': {'displayName': 'Jasper Mulder', 'photoUrl': 'https://lh3.googleusercontent.com/a-/AOh14GifrN-KID4f3Eu2i34s6o2boCZLCNEhKDJt_6esOw=s64', 'userId': '07619433414547634568'}, 'user_tz': -60}, id="9WuuBXMBiT7Q", outputId="d452bd0e-3bb0-4594-b947-08c956a19b11"}
+# %timeit acc_full = eval_callback(model, None, use_cuda=True)
+# %timeit acc_comp = eval_callback(comp_model_svd, None, use_cuda=True)
+```
