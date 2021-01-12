@@ -5000,7 +5000,11 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.9.0"
+<<<<<<< HEAD
+   "version": "3.6.8"
+=======
+   "version": "3.8.5"
+>>>>>>> 2f7b56c1fa86c66081776b8739c01b3e4e4c384b
   },
   "widgets": {
    "application/vnd.jupyter.widget-state+json": {
