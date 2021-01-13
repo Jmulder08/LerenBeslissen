@@ -250,7 +250,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 1,
+   "execution_count": 6,
    "metadata": {
     "executionInfo": {
      "elapsed": 970,
@@ -295,7 +295,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 7,
    "metadata": {
     "executionInfo": {
      "elapsed": 1010,
@@ -454,8 +454,6 @@
     "    def long_tailed_imbalance(self, mu, apply=True):\n",
     "        ''' create selection dict with long-tailed imbalance'''\n",
     "        \n",
-    "        max_index = len(self.class_order) - 1\n",
-    "        \n",
     "        # set selection for each class according to long-tailed function, mu is in (0,1)\n",
     "        for i, data_class in enumerate(self.class_order):\n",
     "            self.selection_dict[data_class] = mu**i\n",
@@ -484,7 +482,11 @@
   },
   {
    "cell_type": "code",
+<<<<<<< HEAD
    "execution_count": 4,
+=======
+   "execution_count": null,
+>>>>>>> 085da8385058dc8191617d2d178ba9aae5bbeee2
    "metadata": {
     "colab": {
      "base_uri": "https://localhost:8080/",
@@ -579,22 +581,33 @@
     "\n",
     "test = MNIST(root='./data', train=False, download=True, transform=transformImg)\n",
     "\n",
-    "\n",
+    "# init imbalancer\n",
     "train_imbalance = MNIST_Imbalancer()\n",
     "\n",
+    "# plot linear imbalance distribution\n",
     "train_imbalance.linear_imbalance(5, apply=False)\n",
     "train_imbalance.plot(\"Linear Imbalance\")\n",
     "\n",
+    "# plot step imbalance distribution\n",
     "train_imbalance.step_imbalance(4, 0.5, apply=False)\n",
     "train_imbalance.plot(\"Step Imbalance\")\n",
     "\n",
+    "<<<<<<< local\n",
+    "train_imbalance.long_tailed_imbalance(0.7, apply=False)\n",
+    "=======\n",
+    "# plot long-tailed imbalance distribution, AND apply to the data\n",
     "train_imbalance.long_tailed_imbalance(0.7)\n",
+    ">>>>>>> remote\n",
     "train_imbalance.plot(\"Long-Tailed Imbalance\")\n",
     "\n",
+    "# set training data to the dataset from imbalancer\n",
     "train = train_imbalance.dataset\n",
     "\n",
+<<<<<<< HEAD
     "\n",
     "\n",
+=======
+>>>>>>> 085da8385058dc8191617d2d178ba9aae5bbeee2
     "# Define train/test loaders\n",
     "train_loader = DataLoader(train, batch_size=128, num_workers=4, shuffle=True, pin_memory=True)\n",
     "test_loader = DataLoader(train, batch_size=1024, num_workers=4, shuffle=False, pin_memory=True)"
@@ -611,7 +624,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": null,
    "metadata": {
     "executionInfo": {
      "elapsed": 1003,
@@ -701,25 +714,32 @@
     "import numpy as np\n",
     "from torch.utils.tensorboard import SummaryWriter\n",
     "\n",
-    "# to use for weighted loss functions, values should be according to imbalance\n",
-    "weights = torch.FloatTensor([1,1,1,1,1,1,2,1,1,2])\n",
+    "def get_weights(imbalance_dict):\n",
+    "    '''return weights for loss function appropriate for given imbalance distribution'''\n",
+    "    pass\n",
     "\n",
-    "criterion = nn.CrossEntropyLoss()\n",
-    "device = 'cuda' if torch.cuda.is_available() else 'cpu'\n",
-    "n_epochs = 10\n",
-    "writer = SummaryWriter()\n",
-    "model = LeNet5().to(device)\n",
-    "opt = optim.SGD(model.parameters(), lr=1e-2)\n",
+    "def train_and_test(train_loader, test_loader, description, loss_func=nn.CrossEntropyLoss, weights=None):\n",
+    "    ''' train and test model on data loaders'''\n",
     "\n",
-    "# Train+test, log to tensorboard\n",
-    "# It's recommended to also print all the scalar values\n",
-    "for i in range(n_epochs):\n",
-    "    train_acc, train_loss = train_epoch(model, opt, train_loader, criterion, device)\n",
-    "    test_acc, test_loss = test_epoch(model, test_loader, criterion, device)\n",
-    "    writer.add_scalar('train/acc', train_acc, i+1)\n",
-    "    writer.add_scalar('train/loss', train_loss, i+1)\n",
-    "    writer.add_scalar('test/acc', test_acc, i+1)\n",
-    "    writer.add_scalar('test/loss', test_loss, i+1)\n"
+    "    criterion = loss_func(weight=weights) if weights else loss_func()\n",
+    "    device = 'cuda' if torch.cuda.is_available() else 'cpu'\n",
+    "    n_epochs = 10\n",
+    "    writer = SummaryWriter(f'runs/{description}')\n",
+    "    model = LeNet5().to(device)\n",
+    "    opt = optim.SGD(model.parameters(), lr=1e-2)\n",
+    "\n",
+    "    # Train+test, log to tensorboard\n",
+    "    # It's recommended to also print all the scalar values\n",
+    "    for i in range(n_epochs):\n",
+    "        train_acc, train_loss = train_epoch(model, opt, train_loader, criterion, device)\n",
+    "        test_acc, test_loss = test_epoch(model, test_loader, criterion, device)\n",
+    "        writer.add_scalar('train/acc', train_acc, i+1)\n",
+    "        writer.add_scalar('train/loss', train_loss, i+1)\n",
+    "        writer.add_scalar('test/acc', test_acc, i+1)\n",
+    "        writer.add_scalar('test/loss', test_loss, i+1)\n",
+    "        \n",
+    "\n",
+    "train_and_test(train_loader, test_loader, \"Long-Tailed, cross entropy\")"
    ]
   },
   {
@@ -839,7 +859,7 @@
    },
    "outputs": [],
    "source": [
-    "from aimet_common.defs import CostMetric, CompressionScheme, GreedySelectionParameters\n",
+    "from print(comp_model_prun)aimet_common.defs import CostMetric, CompressionScheme, GreedySelectionParameters\n",
     "from aimet_torch.defs import ChannelPruningParameters\n",
     "from aimet_torch.compress import ModelCompressor\n",
     "from aimet_torch.onnx_utils import OnnxSaver\n",
@@ -897,30 +917,181 @@
     "id": "N75lsRaAmna1",
     "outputId": "c3ff1dcd-ae7c-4b05-888b-01ff888a993f"
    },
-   "outputs": [],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 13:26:07,386 - CompRatioSelect - INFO - Analyzing compression ratio: 0.1 =====================>\n",
+      "2021-01-13 13:26:07,586 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 13:26:08,933 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 13:26:17,653 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.100000 ==> eval_score=0.957505\n",
+      "2021-01-13 13:26:17,664 - CompRatioSelect - INFO - Analyzing compression ratio: 0.2 =====================>\n",
+      "2021-01-13 13:26:17,757 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 13:26:18,903 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 13:26:25,870 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.200000 ==> eval_score=0.957758\n",
+      "2021-01-13 13:26:25,881 - CompRatioSelect - INFO - Analyzing compression ratio: 0.3 =====================>\n",
+      "2021-01-13 13:26:25,970 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 13:26:26,629 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 13:26:33,926 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.300000 ==> eval_score=0.957808\n",
+      "2021-01-13 13:26:33,929 - CompRatioSelect - INFO - Analyzing compression ratio: 0.4 =====================>\n",
+      "2021-01-13 13:26:34,000 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 13:26:34,591 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 13:26:40,604 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.400000 ==> eval_score=0.961097\n",
+      "2021-01-13 13:26:40,613 - CompRatioSelect - INFO - Analyzing compression ratio: 0.5 =====================>\n",
+      "2021-01-13 13:26:40,700 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 13:26:41,403 - ChannelPruning - INFO - finished linear regression fit \n"
+     ]
+    },
+    {
+     "ename": "KeyboardInterrupt",
+     "evalue": "",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mKeyboardInterrupt\u001b[0m                         Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-14-2f0b17168fe1>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m     19\u001b[0m                                                    \u001b[0mcompress_scheme\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mCompressionScheme\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mchannel_pruning\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     20\u001b[0m                                                    \u001b[0mcost_metric\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mCostMetric\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mmac\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 21\u001b[0;31m                                                    \u001b[0mparameters\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mchannel_pruning_parameters\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     22\u001b[0m                                                    )\n",
+      "\u001b[0;32m/workspace/build/staging/universal/lib/python/aimet_torch/compress.py\u001b[0m in \u001b[0;36mcompress_model\u001b[0;34m(model, eval_callback, eval_iterations, input_shape, compress_scheme, cost_metric, parameters, trainer, visualization_url)\u001b[0m\n\u001b[1;32m    111\u001b[0m             \u001b[0;32mraise\u001b[0m \u001b[0mValueError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"Compression scheme not supported: {}\"\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mformat\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcompress_scheme\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    112\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 113\u001b[0;31m         \u001b[0mcompressed_layer_db\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mstats\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0malgo\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcompress_model\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcost_metric\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtrainer\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    114\u001b[0m         \u001b[0;32mreturn\u001b[0m \u001b[0mcompressed_layer_db\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mmodel\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mstats\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/workspace/build/staging/universal/lib/python/aimet_common/compression_algo.py\u001b[0m in \u001b[0;36mcompress_model\u001b[0;34m(self, cost_metric, trainer)\u001b[0m\n\u001b[1;32m     86\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     87\u001b[0m         \u001b[0;31m# Find optimal compression ratios for each layer\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 88\u001b[0;31m         \u001b[0mlayer_comp_ratio_list\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mstats\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_comp_ratio_select_algo\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mselect_per_layer_comp_ratios\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     89\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     90\u001b[0m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_pickle_comp_ratio_list\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mlayer_comp_ratio_list\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/workspace/build/staging/universal/lib/python/aimet_common/comp_ratio_select.py\u001b[0m in \u001b[0;36mselect_per_layer_comp_ratios\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    221\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    222\u001b[0m         \u001b[0;31m# Compute eval scores for each candidate comp-ratio in each layer\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 223\u001b[0;31m         \u001b[0meval_scores_dict\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_construct_eval_dict\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    224\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    225\u001b[0m         \u001b[0;31m# Fit the scores to a monotonically increasing function\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/workspace/build/staging/universal/lib/python/aimet_common/comp_ratio_select.py\u001b[0m in \u001b[0;36m_construct_eval_dict\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    212\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    213\u001b[0m             \u001b[0;31m# Create the eval scores dictionary\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 214\u001b[0;31m             \u001b[0meval_scores_dict\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_compute_eval_scores_for_all_comp_ratio_candidates\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    215\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    216\u001b[0m             \u001b[0;31m# save the dictionary to file (in case the user wants to reuse the dictionary in the future)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/workspace/build/staging/universal/lib/python/aimet_common/comp_ratio_select.py\u001b[0m in \u001b[0;36m_compute_eval_scores_for_all_comp_ratio_candidates\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    398\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    399\u001b[0m             layer_wise_eval_scores = self._compute_layerwise_eval_score_per_comp_ratio_candidate(data_table,\n\u001b[0;32m--> 400\u001b[0;31m                                                                                                  progress_bar, layer)\n\u001b[0m\u001b[1;32m    401\u001b[0m             \u001b[0meval_scores_dict\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mlayer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mname\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mlayer_wise_eval_scores\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    402\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/workspace/build/staging/universal/lib/python/aimet_common/comp_ratio_select.py\u001b[0m in \u001b[0;36m_compute_layerwise_eval_score_per_comp_ratio_candidate\u001b[0;34m(self, tabular_progress_object, progress_bar, layer)\u001b[0m\n\u001b[1;32m    429\u001b[0m                                                        trainer=None)\n\u001b[1;32m    430\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 431\u001b[0;31m             \u001b[0meval_score\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_eval_func\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpruned_layer_db\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mmodel\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_eval_iter\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0muse_cuda\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_is_cuda\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    432\u001b[0m             \u001b[0mlayer_wise_eval_scores_dict\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mcomp_ratio\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0meval_score\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    433\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m<ipython-input-13-d2a14d951043>\u001b[0m in \u001b[0;36meval_callback\u001b[0;34m(model, iterations, use_cuda)\u001b[0m\n\u001b[1;32m     11\u001b[0m     \u001b[0mn_samples\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;36m0\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     12\u001b[0m     \u001b[0;32mwith\u001b[0m \u001b[0mtorch\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mno_grad\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 13\u001b[0;31m         \u001b[0;32mfor\u001b[0m \u001b[0midx\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0my\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32min\u001b[0m \u001b[0menumerate\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtest_loader\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     14\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0muse_cuda\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     15\u001b[0m                 \u001b[0mx\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mx\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mto\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'cuda:0'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mto\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'cuda:0'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/torch/utils/data/dataloader.py\u001b[0m in \u001b[0;36m__next__\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    343\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    344\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m__next__\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 345\u001b[0;31m         \u001b[0mdata\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_next_data\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    346\u001b[0m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_num_yielded\u001b[0m \u001b[0;34m+=\u001b[0m \u001b[0;36m1\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    347\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_dataset_kind\u001b[0m \u001b[0;34m==\u001b[0m \u001b[0m_DatasetKind\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mIterable\u001b[0m \u001b[0;32mand\u001b[0m\u001b[0;31m \u001b[0m\u001b[0;31m\\\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/torch/utils/data/dataloader.py\u001b[0m in \u001b[0;36m_next_data\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    839\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    840\u001b[0m             \u001b[0;32massert\u001b[0m \u001b[0;32mnot\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_shutdown\u001b[0m \u001b[0;32mand\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_tasks_outstanding\u001b[0m \u001b[0;34m>\u001b[0m \u001b[0;36m0\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 841\u001b[0;31m             \u001b[0midx\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdata\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_get_data\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    842\u001b[0m             \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_tasks_outstanding\u001b[0m \u001b[0;34m-=\u001b[0m \u001b[0;36m1\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    843\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/torch/utils/data/dataloader.py\u001b[0m in \u001b[0;36m_get_data\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    806\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    807\u001b[0m             \u001b[0;32mwhile\u001b[0m \u001b[0;32mTrue\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 808\u001b[0;31m                 \u001b[0msuccess\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdata\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_try_get_data\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    809\u001b[0m                 \u001b[0;32mif\u001b[0m \u001b[0msuccess\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    810\u001b[0m                     \u001b[0;32mreturn\u001b[0m \u001b[0mdata\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/torch/utils/data/dataloader.py\u001b[0m in \u001b[0;36m_try_get_data\u001b[0;34m(self, timeout)\u001b[0m\n\u001b[1;32m    759\u001b[0m         \u001b[0;31m#   (bool: whether successfully get data, any: data if successful else None)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    760\u001b[0m         \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 761\u001b[0;31m             \u001b[0mdata\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_data_queue\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtimeout\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mtimeout\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    762\u001b[0m             \u001b[0;32mreturn\u001b[0m \u001b[0;34m(\u001b[0m\u001b[0;32mTrue\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdata\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    763\u001b[0m         \u001b[0;32mexcept\u001b[0m \u001b[0mException\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0me\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/lib/python3.6/multiprocessing/queues.py\u001b[0m in \u001b[0;36mget\u001b[0;34m(self, block, timeout)\u001b[0m\n\u001b[1;32m    102\u001b[0m                 \u001b[0;32mif\u001b[0m \u001b[0mblock\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    103\u001b[0m                     \u001b[0mtimeout\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mdeadline\u001b[0m \u001b[0;34m-\u001b[0m \u001b[0mtime\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mmonotonic\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 104\u001b[0;31m                     \u001b[0;32mif\u001b[0m \u001b[0;32mnot\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_poll\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtimeout\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    105\u001b[0m                         \u001b[0;32mraise\u001b[0m \u001b[0mEmpty\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    106\u001b[0m                 \u001b[0;32melif\u001b[0m \u001b[0;32mnot\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_poll\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/lib/python3.6/multiprocessing/connection.py\u001b[0m in \u001b[0;36mpoll\u001b[0;34m(self, timeout)\u001b[0m\n\u001b[1;32m    255\u001b[0m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_check_closed\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    256\u001b[0m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_check_readable\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 257\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_poll\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtimeout\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    258\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    259\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m__enter__\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/lib/python3.6/multiprocessing/connection.py\u001b[0m in \u001b[0;36m_poll\u001b[0;34m(self, timeout)\u001b[0m\n\u001b[1;32m    412\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    413\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m_poll\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtimeout\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 414\u001b[0;31m         \u001b[0mr\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mwait\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtimeout\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    415\u001b[0m         \u001b[0;32mreturn\u001b[0m \u001b[0mbool\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mr\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    416\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/lib/python3.6/multiprocessing/connection.py\u001b[0m in \u001b[0;36mwait\u001b[0;34m(object_list, timeout)\u001b[0m\n\u001b[1;32m    909\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    910\u001b[0m             \u001b[0;32mwhile\u001b[0m \u001b[0;32mTrue\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 911\u001b[0;31m                 \u001b[0mready\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mselector\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mselect\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtimeout\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    912\u001b[0m                 \u001b[0;32mif\u001b[0m \u001b[0mready\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    913\u001b[0m                     \u001b[0;32mreturn\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfileobj\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mevents\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mready\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/lib/python3.6/selectors.py\u001b[0m in \u001b[0;36mselect\u001b[0;34m(self, timeout)\u001b[0m\n\u001b[1;32m    374\u001b[0m             \u001b[0mready\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    375\u001b[0m             \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 376\u001b[0;31m                 \u001b[0mfd_event_list\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_poll\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mpoll\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtimeout\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    377\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mInterruptedError\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    378\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0mready\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mKeyboardInterrupt\u001b[0m: "
+     ]
+    }
+   ],
    "source": [
-    "greedy_params = GreedySelectionParameters(target_comp_ratio=Decimal(0.5))\n",
-    "# Exclude first layer from pruning\n",
-    "modules_to_ignore = [model.convs[0]]\n",
-    "auto_params = ChannelPruningParameters.AutoModeParams(greedy_params, modules_to_ignore)\n",
-    "input_shape = (1, 1, 28, 28)\n",
-    "channel_pruning_parameters = ChannelPruningParameters(mode=ChannelPruningParameters.Mode.auto,\n",
-    "                                                      params=auto_params,\n",
-    "                                                      data_loader=train_loader,\n",
-    "                                                      num_reconstruction_samples=1024,\n",
-    "                                                      allow_custom_downsample_ops=False,\n",
-    "                                                    #   multiplicity=8\n",
-    "                                                      )\n",
+    "def test_jelle():\n",
+    "    greedy_params = GreedySelectionParameters(target_comp_ratio=Decimal(0.5))\n",
+    "    # Exclude first layer from pruning\n",
+    "    modules_to_ignore = [model.convs[0]]\n",
+    "    auto_params = ChannelPruningParameters.AutoModeParams(greedy_params, modules_to_ignore)\n",
+    "    input_shape = (1, 1, 28, 28)\n",
+    "    channel_pruning_parameters = ChannelPruningParameters(mode=ChannelPruningParameters.Mode.auto,\n",
+    "                                                          params=auto_params,\n",
+    "                                                          data_loader=train_loader,\n",
+    "                                                          num_reconstruction_samples=1024,\n",
+    "                                                          allow_custom_downsample_ops=False,\n",
+    "                                                        #   multiplicity=8\n",
+    "                                                          )\n",
     "\n",
-    "# This takes a bit\n",
-    "comp_model_prun, stats_prun = ModelCompressor.compress_model(model,\n",
-    "                                                   input_shape=input_shape,\n",
-    "                                                   eval_callback=eval_callback,\n",
-    "                                                   eval_iterations=None,\n",
-    "                                                   compress_scheme=CompressionScheme.channel_pruning,\n",
-    "                                                   cost_metric=CostMetric.mac,\n",
-    "                                                   parameters=channel_pruning_parameters,\n",
-    "                                                   )\n"
+    "    # This takes a bit\n",
+    "    comp_model_prun, stats_prun = ModelCompressor.compress_model(model,\n",
+    "                                                       input_shape=input_shape,\n",
+    "                                                       eval_callback=eval_callback,\n",
+    "                                                       eval_iterations=None,\n",
+    "                                                       compress_scheme=CompressionScheme.channel_pruning,\n",
+    "                                                       cost_metric=CostMetric.mac,\n",
+    "                                                       parameters=channel_pruning_parameters,\n",
+    "                                                       )\n",
+    "    \n",
+    "    compare_mod = [stats_prun.compressed_model_accuracy,\n",
+    "                   stats_prun.baseline_model_accuracy,\n",
+    "                   stats_prun.mac_compression_ratio, \n",
+    "                   stats_prun.memory_compression_ratio]\n",
+    "    \n",
+    "    return compare_mod"
    ]
   },
   {
@@ -934,7 +1105,335 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:02,156 - CompRatioSelect - INFO - Analyzing compression ratio: 0.1 =====================>\n",
+      "2021-01-13 15:03:02,176 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:02,381 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:05,217 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.100000 ==> eval_score=0.961833\n",
+      "2021-01-13 15:03:05,219 - CompRatioSelect - INFO - Analyzing compression ratio: 0.2 =====================>\n",
+      "2021-01-13 15:03:05,242 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:05,436 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:08,315 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.200000 ==> eval_score=0.960400\n",
+      "2021-01-13 15:03:08,316 - CompRatioSelect - INFO - Analyzing compression ratio: 0.3 =====================>\n",
+      "2021-01-13 15:03:08,339 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:08,544 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:11,307 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.300000 ==> eval_score=0.959350\n",
+      "2021-01-13 15:03:11,308 - CompRatioSelect - INFO - Analyzing compression ratio: 0.4 =====================>\n",
+      "2021-01-13 15:03:11,335 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:11,533 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:14,767 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.400000 ==> eval_score=0.973633\n",
+      "2021-01-13 15:03:14,768 - CompRatioSelect - INFO - Analyzing compression ratio: 0.5 =====================>\n",
+      "2021-01-13 15:03:14,791 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:14,985 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:17,938 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.500000 ==> eval_score=0.976033\n",
+      "2021-01-13 15:03:17,939 - CompRatioSelect - INFO - Analyzing compression ratio: 0.6 =====================>\n",
+      "2021-01-13 15:03:17,963 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:18,169 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:21,157 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.600000 ==> eval_score=0.976267\n",
+      "2021-01-13 15:03:21,158 - CompRatioSelect - INFO - Analyzing compression ratio: 0.7 =====================>\n",
+      "2021-01-13 15:03:21,180 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:21,404 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:24,630 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.700000 ==> eval_score=0.979533\n",
+      "2021-01-13 15:03:24,631 - CompRatioSelect - INFO - Analyzing compression ratio: 0.8 =====================>\n",
+      "2021-01-13 15:03:24,662 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:24,863 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:28,146 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.800000 ==> eval_score=0.979450\n",
+      "2021-01-13 15:03:28,147 - CompRatioSelect - INFO - Analyzing compression ratio: 0.9 =====================>\n",
+      "2021-01-13 15:03:28,170 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:28,383 - ChannelPruning - INFO - finished linear regression fit \n",
+      "2021-01-13 15:03:31,406 - CompRatioSelect - INFO - Layer convs.3, comp_ratio 0.900000 ==> eval_score=0.979733\n",
+      "2021-01-13 15:03:31,407 - CompRatioSelect - INFO - Greedy selection: Saved eval dict to ./data/greedy_selection_eval_scores_dict.pkl\n",
+      "2021-01-13 15:03:31,407 - CompRatioSelect - INFO - Greedy selection: overall_min_score=0.959350, overall_max_score=0.979733\n",
+      "2021-01-13 15:03:31,408 - CompRatioSelect - INFO - Greedy selection: Original model cost=(Cost: memory=61470, mac=416520)\n",
+      "2021-01-13 15:03:31,431 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,488 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,533 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,578 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,623 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/workspace/build/staging/universal/lib/python/aimet_torch/winnow/winnow_utils.py:186: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).\n",
+      "  result = torch.tensor(tensor)  # pylint: disable=not-callable\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2021-01-13 15:03:31,671 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,725 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,775 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,829 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,883 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,933 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:31,987 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:32,036 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:32,084 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:32,132 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:32,180 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:32,207 - CompRatioSelect - INFO - Greedy selection: final choice - comp_ratio=0.427639, score=0.973632\n",
+      "2021-01-13 15:03:32,231 - ConnectedGraph - WARNING - Ops with missing modules: ['flatten_6']\n",
+      "This can be due to several reasons:\n",
+      "1. There is no mapping for the op in ConnectedGraph.op_type_map. Add a mapping for ConnectedGraph to recognize and be able to map the op.\n",
+      "2. The op is defined as a functional in the forward function, instead of as a class module. Redefine the op as a class module if possible. Else, check 3.\n",
+      "3. This op is one that cannot be defined as a class module, but has not been added to ConnectedGraph.functional_ops. Add to continue.\n",
+      "2021-01-13 15:03:32,409 - ChannelPruning - INFO - finished linear regression fit \n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "['0.973650', '0.979683', '0.427639', '0.972344']"
+      ]
+     },
+     "execution_count": 34,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "test_jelle()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
    "metadata": {
     "colab": {
      "base_uri": "https://localhost:8080/"
@@ -953,12 +1452,67 @@
     "id": "HW_7U8RUnwUe",
     "outputId": "6ec98696-025f-4b00-ea47-5bc1467b558f"
    },
-   "outputs": [],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class '__main__.LeNet5'>\n",
+      "<class '__main__.LeNet5'>\n",
+      "<class 'aimet_common.defs.CompressionStats'>\n",
+      "['0.973317', '0.979683', '0.427639', '0.972344']\n",
+      "---------- Original model ----------\n",
+      "LeNet5(\n",
+      "  (convs): Sequential(\n",
+      "    (0): Conv2d(1, 6, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))\n",
+      "    (1): ReLU()\n",
+      "    (2): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n",
+      "    (3): Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1))\n",
+      "    (4): ReLU()\n",
+      "    (5): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n",
+      "  )\n",
+      "  (linears): Sequential(\n",
+      "    (0): Linear(in_features=400, out_features=120, bias=True)\n",
+      "    (1): Linear(in_features=120, out_features=84, bias=True)\n",
+      "    (2): Linear(in_features=84, out_features=10, bias=True)\n",
+      "  )\n",
+      ")\n",
+      "---------- Compressed model ----------\n",
+      "LeNet5(\n",
+      "  (convs): Sequential(\n",
+      "    (0): Conv2d(1, 2, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))\n",
+      "    (1): ReLU()\n",
+      "    (2): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n",
+      "    (3): Conv2d(2, 16, kernel_size=(5, 5), stride=(1, 1))\n",
+      "    (4): ReLU()\n",
+      "    (5): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n",
+      "  )\n",
+      "  (linears): Sequential(\n",
+      "    (0): Linear(in_features=400, out_features=120, bias=True)\n",
+      "    (1): Linear(in_features=120, out_features=84, bias=True)\n",
+      "    (2): Linear(in_features=84, out_features=10, bias=True)\n",
+      "  )\n",
+      ")\n"
+     ]
+    }
+   ],
    "source": [
-    "print(stats_prun)\n",
+    "# print(type(model))\n",
+    "# print(type(comp_model_prun))\n",
+    "# print(type(stats_prun))\n",
+    "\n",
+    "\n",
+    "# comp_acc = stats_prun.compressed_model_accuracy\n",
+    "# base_acc = stats_prun.baseline_model_accuracy\n",
+    "\n",
+    "compare_mod = [stats_prun.compressed_model_accuracy,stats_prun.baseline_model_accuracy,stats_prun.mac_compression_ratio, stats_prun.memory_compression_ratio]\n",
+    "\n",
+    "print(compare_mod)\n",
+    "\n",
     "print('-'*10 + ' Original model ' + '-'*10)\n",
     "print(model)\n",
     "print('-'*10 + ' Compressed model ' + '-'*10)\n",
+    "\n",
     "print(comp_model_prun)"
    ]
   },
@@ -974,7 +1528,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 11,
    "metadata": {
     "colab": {
      "base_uri": "https://localhost:8080/"
@@ -993,7 +1547,28 @@
     "id": "Kb83uXumopad",
     "outputId": "fe194811-5adc-410a-c261-687638c883e7"
    },
-   "outputs": [],
+   "outputs": [
+    {
+     "ename": "AssertionError",
+     "evalue": "\nFound no NVIDIA driver on your system. Please check that you\nhave an NVIDIA GPU and installed a driver from\nhttp://www.nvidia.com/Download/index.aspx",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mAssertionError\u001b[0m                            Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-11-9cf77e6acb7e>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mget_ipython\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrun_line_magic\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'timeit'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m'acc_full = eval_callback(model, None, use_cuda=True)'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      2\u001b[0m \u001b[0mget_ipython\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrun_line_magic\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'timeit'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m'acc_comp = eval_callback(comp_model_prun, None, use_cuda=True)'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/IPython/core/interactiveshell.py\u001b[0m in \u001b[0;36mrun_line_magic\u001b[0;34m(self, magic_name, line, _stack_depth)\u001b[0m\n\u001b[1;32m   2312\u001b[0m                 \u001b[0mkwargs\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m'local_ns'\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0msys\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_getframe\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mstack_depth\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mf_locals\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   2313\u001b[0m             \u001b[0;32mwith\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mbuiltin_trap\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 2314\u001b[0;31m                 \u001b[0mresult\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mfn\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   2315\u001b[0m             \u001b[0;32mreturn\u001b[0m \u001b[0mresult\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   2316\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m</usr/local/lib/python3.6/dist-packages/decorator.py:decorator-gen-60>\u001b[0m in \u001b[0;36mtimeit\u001b[0;34m(self, line, cell, local_ns)\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/IPython/core/magic.py\u001b[0m in \u001b[0;36m<lambda>\u001b[0;34m(f, *a, **k)\u001b[0m\n\u001b[1;32m    185\u001b[0m     \u001b[0;31m# but it's overkill for just that one bit of state.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    186\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mmagic_deco\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0marg\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 187\u001b[0;31m         \u001b[0mcall\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;32mlambda\u001b[0m \u001b[0mf\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m*\u001b[0m\u001b[0ma\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mk\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mf\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0ma\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mk\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    188\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    189\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mcallable\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0marg\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/IPython/core/magics/execution.py\u001b[0m in \u001b[0;36mtimeit\u001b[0;34m(self, line, cell, local_ns)\u001b[0m\n\u001b[1;32m   1156\u001b[0m             \u001b[0;32mfor\u001b[0m \u001b[0mindex\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mrange\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;36m10\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1157\u001b[0m                 \u001b[0mnumber\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;36m10\u001b[0m \u001b[0;34m**\u001b[0m \u001b[0mindex\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1158\u001b[0;31m                 \u001b[0mtime_number\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mtimer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtimeit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mnumber\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1159\u001b[0m                 \u001b[0;32mif\u001b[0m \u001b[0mtime_number\u001b[0m \u001b[0;34m>=\u001b[0m \u001b[0;36m0.2\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1160\u001b[0m                     \u001b[0;32mbreak\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/IPython/core/magics/execution.py\u001b[0m in \u001b[0;36mtimeit\u001b[0;34m(self, number)\u001b[0m\n\u001b[1;32m    167\u001b[0m         \u001b[0mgc\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdisable\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    168\u001b[0m         \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 169\u001b[0;31m             \u001b[0mtiming\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0minner\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mit\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtimer\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    170\u001b[0m         \u001b[0;32mfinally\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    171\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mgcold\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m<magic-timeit>\u001b[0m in \u001b[0;36minner\u001b[0;34m(_it, _timer)\u001b[0m\n",
+      "\u001b[0;32m<ipython-input-8-d2a14d951043>\u001b[0m in \u001b[0;36meval_callback\u001b[0;34m(model, iterations, use_cuda)\u001b[0m\n\u001b[1;32m     13\u001b[0m         \u001b[0;32mfor\u001b[0m \u001b[0midx\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0my\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32min\u001b[0m \u001b[0menumerate\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtest_loader\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     14\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0muse_cuda\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 15\u001b[0;31m                 \u001b[0mx\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mx\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mto\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'cuda:0'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mto\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'cuda:0'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     16\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     17\u001b[0m             \u001b[0mout\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mforward\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/torch/cuda/__init__.py\u001b[0m in \u001b[0;36m_lazy_init\u001b[0;34m()\u001b[0m\n\u001b[1;32m    194\u001b[0m             raise RuntimeError(\n\u001b[1;32m    195\u001b[0m                 \"Cannot re-initialize CUDA in forked subprocess. \" + msg)\n\u001b[0;32m--> 196\u001b[0;31m         \u001b[0m_check_driver\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    197\u001b[0m         \u001b[0mtorch\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_C\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_cuda_init\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    198\u001b[0m         \u001b[0m_cudart\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0m_load_cudart\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/usr/local/lib/python3.6/dist-packages/torch/cuda/__init__.py\u001b[0m in \u001b[0;36m_check_driver\u001b[0;34m()\u001b[0m\n\u001b[1;32m     99\u001b[0m \u001b[0mFound\u001b[0m \u001b[0mno\u001b[0m \u001b[0mNVIDIA\u001b[0m \u001b[0mdriver\u001b[0m \u001b[0mon\u001b[0m \u001b[0myour\u001b[0m \u001b[0msystem\u001b[0m\u001b[0;34m.\u001b[0m \u001b[0mPlease\u001b[0m \u001b[0mcheck\u001b[0m \u001b[0mthat\u001b[0m \u001b[0myou\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    100\u001b[0m \u001b[0mhave\u001b[0m \u001b[0man\u001b[0m \u001b[0mNVIDIA\u001b[0m \u001b[0mGPU\u001b[0m \u001b[0;32mand\u001b[0m \u001b[0minstalled\u001b[0m \u001b[0ma\u001b[0m \u001b[0mdriver\u001b[0m \u001b[0;32mfrom\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 101\u001b[0;31m http://www.nvidia.com/Download/index.aspx\"\"\")\n\u001b[0m\u001b[1;32m    102\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    103\u001b[0m             \u001b[0;31m# TODO: directly link to the alternative bin that needs install\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mAssertionError\u001b[0m: \nFound no NVIDIA driver on your system. Please check that you\nhave an NVIDIA GPU and installed a driver from\nhttp://www.nvidia.com/Download/index.aspx"
+     ]
+    }
+   ],
    "source": [
     "%timeit acc_full = eval_callback(model, None, use_cuda=True)\n",
     "%timeit acc_comp = eval_callback(comp_model_prun, None, use_cuda=True)"
