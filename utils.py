@@ -43,13 +43,15 @@ def init_params(net):
 
 print(os.popen('stty size', 'r').read().split())
 #_, term_width = os.popen('stty size', 'r').read().split()
-term_width = 80 #int(term_width)
+term_width = 110 #int(term_width)
 
-TOTAL_BAR_LENGTH = 65.
+TOTAL_BAR_LENGTH = 30.
 last_time = time.time()
 begin_time = last_time
 def progress_bar(current, total, msg=None):
     global last_time, begin_time
+    TOTAL_BAR_LENGTH = 30.
+    term_width = 110 
     if current == 0:
         begin_time = time.time()  # Reset for new bar.
 
